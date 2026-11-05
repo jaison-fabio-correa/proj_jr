@@ -10,7 +10,6 @@ from painel import (
     formatar_numero,
     formatar_percentual,
     grafico_dnfs,
-    grafico_gap,
     grafico_grid,
     grafico_nacionalidade,
     grafico_pit_stops,
@@ -38,7 +37,6 @@ MARTS = [
     "hall_of_fame",
     "season_kpis",
     "championship_progression",
-    "championship_gap",
     "grid_performance",
     "pit_stop_performance",
     "dnf_reliability",
@@ -168,19 +166,13 @@ def temporada(marts: dict[str, pd.DataFrame]) -> None:
             border=True,
         )
         st.metric("Corridas", formatar_numero(kpi["races"]), border=True)
-        st.metric("Abandonos", formatar_numero(kpi["dnfs"]), border=True)
 
     progressao = filtrar_ano(marts["championship_progression"], ano)
-    gap = filtrar_ano(marts["championship_gap"], ano)
     grid = filtrar_ano(marts["grid_performance"], ano)
     pits = filtrar_ano(marts["pit_stop_performance"], ano)
     dnfs = filtrar_ano(marts["dnf_reliability"], ano)
 
-    left, right = st.columns(2)
-    with left:
-        st.plotly_chart(grafico_progressao(progressao), width="stretch")
-    with right:
-        st.plotly_chart(grafico_gap(gap), width="stretch")
+    st.plotly_chart(grafico_progressao(progressao), width="stretch")
     st.plotly_chart(grafico_grid(grid), width="stretch")
     left, right = st.columns(2)
     with left:
