@@ -1,5 +1,7 @@
 """Dashboard histórico da Fórmula 1."""
 
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
@@ -17,6 +19,10 @@ from painel import (
     grafico_vitorias_construtores,
     ler,
 )
+from pipeline.db import DATABASE_PATH
+from pipeline.ingestao import ingerir
+from pipeline.mart import gerar
+from pipeline.transformacao import transformar
 
 st.set_page_config(
     page_title="F1 | Panorama histórico",
@@ -41,7 +47,23 @@ MARTS = [
 
 @st.cache_data
 def carregar_marts() -> dict[str, pd.DataFrame]:
+    preparar_banco()
     return ler(MARTS)
+
+
+@st.cache_resource
+def preparar_banco() -> None:
+    """Cria o banco local automaticamente quando o deploy não o possui."""
+    if DATABASE_PATH.exists():
+        return
+    if not Path("raw").is_dir():
+        raise FileNotFoundError(
+            "A pasta raw/ não foi encontrada. Inclua os CSVs de origem "
+            "no repositório antes de publicar o dashboard."
+        )
+    ingerir()
+    transformar()
+    gerar()
 
 
 def panorama(marts: dict[str, pd.DataFrame]) -> None:

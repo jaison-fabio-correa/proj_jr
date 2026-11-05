@@ -141,6 +141,22 @@ Execute com:
 uv run streamlit run app.py
 ```
 
+Na primeira execução, se `olist.duckdb` não existir, o dashboard cria o banco
+automaticamente a partir dos CSVs versionados em `raw/`, executando as camadas
+RAW, REFINED e MART. Isso é necessário no Streamlit Cloud, que inicia o app em
+um ambiente novo a cada deploy.
+
+### Publicação no Streamlit Cloud
+
+1. Publique o repositório com a pasta `raw/` e seus 14 CSVs.
+2. No Streamlit Cloud, selecione `app.py` como arquivo principal.
+3. O `pyproject.toml` e o `uv.lock` fornecem as dependências do app.
+4. Não é necessário versionar `olist.duckdb`; ele é criado no primeiro start.
+
+O arquivo maior é `raw/lap_times.csv`, com aproximadamente 25 MB. Ele deve
+estar disponível no repositório ou em um armazenamento acessível pelo deploy;
+sem os CSVs, o app exibirá um erro informando que a pasta `raw/` está ausente.
+
 ### Aba panorâmica histórica
 
 Apresenta:

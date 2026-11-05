@@ -7,9 +7,6 @@ __pycache__/
 olist.duckdb
 olist.duckdb.wal
 
-# Dados locais de origem
-raw/*.csv
-
 # Testes e cobertura
 .pytest_cache/
 .coverage
