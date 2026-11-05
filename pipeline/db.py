@@ -4,7 +4,6 @@ from pathlib import Path
 
 import duckdb
 
-
 DATABASE_PATH = Path("olist.duckdb")
 
 

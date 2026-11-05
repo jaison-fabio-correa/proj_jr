@@ -24,13 +24,12 @@ Assumptions not specified:
   nome da tabela é o stem do arquivo sem a extensão.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import pandas as pd
 
 from pipeline.db import conectar, criar_schema
-
 
 RAW_DIR = Path("raw")
 
@@ -82,7 +81,8 @@ def ingerir() -> None:
             registro = f"_raw_{tabela}"
             con.register(registro, quadro)
             con.execute(
-                f'CREATE OR REPLACE TABLE raw."{tabela}" AS SELECT * FROM "{registro}"'
+                f'CREATE OR REPLACE TABLE raw."{tabela}" AS '
+                f'SELECT * FROM "{registro}"'
             )
             con.unregister(registro)
     finally:

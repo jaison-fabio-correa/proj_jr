@@ -6,7 +6,8 @@ Especificação:
   schema ``refined``; isso mantém a camada bruta imutável.
 * As 14 tabelas e todas as suas colunas são preservadas com os mesmos nomes,
   evitando perda de informação e mantendo o contrato entre camadas.
-* Datas, horários, durações, inteiros, decimais e textos recebem tipos explícitos para
+* Datas, horários, durações, inteiros, decimais e textos recebem tipos
+  explícitos para
   que a camada refined seja utilizável sem inferência posterior.
 * Conversões usam ``CAST`` e ``strptime`` em SQL. Uma conversão inválida deve
   interromper o processo, em vez de virar nulo silenciosamente.
@@ -36,7 +37,6 @@ import sys
 import duckdb
 
 from pipeline.db import conectar, criar_schema
-
 
 TABLES = (
     "circuits",
@@ -126,7 +126,14 @@ DECIMAL_COLUMNS: dict[str, set[str]] = {
 }
 
 DOUBLE_COLUMNS = {"lat", "lng"}
-DATE_COLUMNS = {"date", "fp1_date", "fp2_date", "fp3_date", "quali_date", "sprint_date"}
+DATE_COLUMNS = {
+    "date",
+    "fp1_date",
+    "fp2_date",
+    "fp3_date",
+    "quali_date",
+    "sprint_date",
+}
 TIME_COLUMNS = {
     "time",
     "fp1_time",
@@ -195,7 +202,8 @@ def _tempo_sql(tabela: str, coluna: str, valor: str) -> str:
             f"CASE WHEN starts_with({valor}, '+') THEN "
             f"make_time(CAST(floor({segundos} / 3600) AS BIGINT), "
             f"CAST(floor({segundos} / 60) % 60 AS BIGINT), {segundos} % 60) "
-            f"WHEN (length({valor}) - length(replace({valor}, ':', ''))) = 1 THEN "
+            f"WHEN (length({valor}) - length(replace({valor}, ':', ''))) = 1 "
+            "THEN "
             f"CASE WHEN strpos({valor}, '.') > 0 THEN "
             f"strptime({valor}, '%M:%S.%f')::TIME ELSE "
             f"strptime({valor}, '%M:%S')::TIME END "
@@ -206,6 +214,7 @@ def _tempo_sql(tabela: str, coluna: str, valor: str) -> str:
     if formato == "%M:%S.%f":
         return (
             f"CASE WHEN (length({valor}) - length(replace({valor}, ':', ''))) = 2 "
+            "THEN "
             f"THEN CASE WHEN strpos({valor}, '.') > 0 THEN "
             f"strptime({valor}, '%H:%M:%S.%f')::TIME ELSE "
             f"strptime({valor}, '%H:%M:%S')::TIME END "
@@ -217,10 +226,11 @@ def _tempo_sql(tabela: str, coluna: str, valor: str) -> str:
 
 
 def _intervalo_sql(valor: str) -> str:
-    base = f"CASE WHEN starts_with({valor}, '+') THEN substr({valor}, 2) ELSE {valor} END"
-    segundo_separador = (
-        f"strpos(substr({base}, strpos({base}, ':') + 1), ':')"
+    base = (
+        f"CASE WHEN starts_with({valor}, '+') THEN substr({valor}, 2) "
+        f"ELSE {valor} END"
     )
+    segundo_separador = f"strpos(substr({base}, strpos({base}, ':') + 1), ':')"
     texto = (
         f"CASE WHEN strpos({base}, ':') = 0 THEN "
         f"{base} || ' seconds' "
@@ -263,10 +273,14 @@ def _tabelas_ausentes(con: duckdb.DuckDBPyConnection) -> list[str]:
 def _exemplo_do_erro(erro: Exception) -> str:
     mensagem = str(erro)
     encontrado = re.search(r"(?:string|value) ['\"]([^'\"]+)['\"]", mensagem)
-    return encontrado.group(1) if encontrado else "não identificado pelo DuckDB"
+    return (
+        encontrado.group(1) if encontrado else "não identificado pelo DuckDB"
+    )
 
 
-def _validar_conversoes(con: duckdb.DuckDBPyConnection, tabela: str, colunas: list[str]) -> None:
+def _validar_conversoes(
+    con: duckdb.DuckDBPyConnection, tabela: str, colunas: list[str]
+) -> None:
     for coluna in colunas:
         tipo = _tipo_sql(tabela, coluna)
         if tipo == "VARCHAR":
@@ -292,7 +306,8 @@ def transformar() -> None:
         if ausentes:
             print(
                 "Tabelas ausentes no schema raw: "
-                f"{', '.join(ausentes)}. Rode: uv run python -m pipeline.ingestao"
+                f"{', '.join(ausentes)}. Rode: "
+                "uv run python -m pipeline.ingestao"
             )
             sys.exit(1)
 
@@ -309,7 +324,9 @@ def transformar() -> None:
 
         criar_schema(con, "refined")
         for tabela, colunas in colunas_por_tabela.items():
-            selecao = ", ".join(_expressao(tabela, coluna) for coluna in colunas)
+            selecao = ", ".join(
+                _expressao(tabela, coluna) for coluna in colunas
+            )
             con.execute(
                 f"CREATE OR REPLACE TABLE refined.{_identificador(tabela)} AS "
                 f"SELECT {selecao} FROM raw.{_identificador(tabela)}"

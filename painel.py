@@ -46,7 +46,9 @@ def filtrar_ano(df: pd.DataFrame, ano: int) -> pd.DataFrame:
     return df.loc[df["year"].eq(ano)].copy()
 
 
-def ordenar(df: pd.DataFrame, coluna: str, ascending: bool = False) -> pd.DataFrame:
+def ordenar(
+    df: pd.DataFrame, coluna: str, ascending: bool = False
+) -> pd.DataFrame:
     """Ordena um DataFrame sem alterar o original."""
     return df.sort_values(coluna, ascending=ascending).reset_index(drop=True)
 
@@ -60,7 +62,11 @@ def formatar_numero(valor: object, casas: int = 0) -> str:
     """Formata um valor escalar para leitura no dashboard."""
     if pd.isna(valor):
         return "—"
-    return f"{float(valor):,.{casas}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return (
+        f"{float(valor):,.{casas}f}".replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
+    )
 
 
 def formatar_percentual(valor: object) -> str:
@@ -77,7 +83,11 @@ def grafico_nacionalidade(df: pd.DataFrame):
         color="titles",
         orientation="h",
         title="Top 10 nacionalidades por vitórias",
-        labels={"wins": "Vitórias", "nationality": "Nacionalidade", "titles": "Títulos"},
+        labels={
+            "wins": "Vitórias",
+            "nationality": "Nacionalidade",
+            "titles": "Títulos",
+        },
     )
 
 
@@ -89,7 +99,11 @@ def grafico_titulos_construtores(df: pd.DataFrame):
         color="constructor",
         barmode="stack",
         title="Títulos de construtores por década",
-        labels={"decade": "Década", "titles": "Títulos", "constructor": "Construtor"},
+        labels={
+            "decade": "Década",
+            "titles": "Títulos",
+            "constructor": "Construtor",
+        },
     )
 
 
@@ -101,7 +115,11 @@ def grafico_vitorias_construtores(df: pd.DataFrame):
         color="constructor",
         markers=True,
         title="Evolução das vitórias por construtor",
-        labels={"year": "Ano", "wins": "Vitórias", "constructor": "Construtor"},
+        labels={
+            "year": "Ano",
+            "wins": "Vitórias",
+            "constructor": "Construtor",
+        },
     )
 
 
@@ -114,7 +132,11 @@ def grafico_progressao(df: pd.DataFrame):
         hover_data=["race"],
         markers=True,
         title="Progressão do campeonato de pilotos",
-        labels={"round": "Rodada", "cumulative_points": "Pontos acumulados", "driver": "Piloto"},
+        labels={
+            "round": "Rodada",
+            "cumulative_points": "Pontos acumulados",
+            "driver": "Piloto",
+        },
     )
 
 
@@ -124,7 +146,11 @@ def grafico_gap(df: pd.DataFrame):
         x="round",
         y=["gap_to_second", "gap_to_third"],
         title="Diferença para o líder",
-        labels={"round": "Rodada", "value": "Pontos de diferença", "variable": "Posição"},
+        labels={
+            "round": "Rodada",
+            "value": "Pontos de diferença",
+            "variable": "Posição",
+        },
     )
 
 
@@ -135,7 +161,10 @@ def grafico_grid(df: pd.DataFrame):
         y="driver",
         orientation="h",
         title="Posições ganhas ou perdidas",
-        labels={"average_grid_gain": "Ganho médio de posições", "driver": "Piloto"},
+        labels={
+            "average_grid_gain": "Ganho médio de posições",
+            "driver": "Piloto",
+        },
     )
 
 
@@ -146,7 +175,11 @@ def grafico_pit_stops(df: pd.DataFrame):
         y=["average_stop_seconds", "fastest_stop_seconds"],
         barmode="group",
         title="Performance de pit stops",
-        labels={"value": "Segundos", "constructor": "Construtor", "variable": "Métrica"},
+        labels={
+            "value": "Segundos",
+            "constructor": "Construtor",
+            "variable": "Métrica",
+        },
     )
 
 
@@ -158,5 +191,9 @@ def grafico_dnfs(df: pd.DataFrame):
         color="incident_category",
         barmode="stack",
         title="Confiabilidade e incidentes",
-        labels={"constructor": "Construtor", "dnfs": "Abandonos", "incident_category": "Categoria"},
+        labels={
+            "constructor": "Construtor",
+            "dnfs": "Abandonos",
+            "incident_category": "Categoria",
+        },
     )

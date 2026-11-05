@@ -28,7 +28,6 @@ import duckdb
 
 from pipeline.db import conectar, criar_schema
 
-
 TABLES = (
     "overview_kpis",
     "nationality_stats",
@@ -389,7 +388,7 @@ def gerar() -> None:
         criar_schema(con, "mart")
         for table in TABLES:
             con.execute(
-                f"CREATE OR REPLACE TABLE mart.\"{table}\" AS {QUERIES[table]}"
+                f'CREATE OR REPLACE TABLE mart."{table}" AS {QUERIES[table]}'
             )
     finally:
         con.close()

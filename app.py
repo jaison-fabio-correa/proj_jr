@@ -18,7 +18,6 @@ from painel import (
     ler,
 )
 
-
 st.set_page_config(
     page_title="F1 | Panorama histórico",
     page_icon=":material/sports_motorsports:",
@@ -49,14 +48,31 @@ def panorama(marts: dict[str, pd.DataFrame]) -> None:
     st.header("Panorama histórico da Fórmula 1")
     kpi = marts["overview_kpis"].iloc[0]
     with st.container(horizontal=True):
-        st.metric("Temporadas analisadas", formatar_numero(kpi["total_seasons"]), border=True)
-        st.metric("Pilotos campeões únicos", formatar_numero(kpi["unique_champion_drivers"]), border=True)
-        st.metric("Equipes campeãs únicas", formatar_numero(kpi["unique_champion_constructors"]), border=True)
-        st.metric("GPs realizados", formatar_numero(kpi["total_races"]), border=True)
+        st.metric(
+            "Temporadas analisadas",
+            formatar_numero(kpi["total_seasons"]),
+            border=True,
+        )
+        st.metric(
+            "Pilotos campeões únicos",
+            formatar_numero(kpi["unique_champion_drivers"]),
+            border=True,
+        )
+        st.metric(
+            "Equipes campeãs únicas",
+            formatar_numero(kpi["unique_champion_constructors"]),
+            border=True,
+        )
+        st.metric(
+            "GPs realizados", formatar_numero(kpi["total_races"]), border=True
+        )
         st.metric(
             "Nacionalidade com mais títulos",
             str(kpi["top_champion_nationality"]),
-            f"{formatar_numero(kpi['top_champion_nationality_titles'])} títulos",
+            (
+                f"{formatar_numero(kpi['top_champion_nationality_titles'])} "
+                "títulos"
+            ),
             border=True,
         )
 
@@ -64,20 +80,33 @@ def panorama(marts: dict[str, pd.DataFrame]) -> None:
     with left:
         with st.container(border=True):
             st.subheader("Vitórias por nacionalidade")
-            st.plotly_chart(grafico_nacionalidade(marts["nationality_stats"]), width="stretch")
+            st.plotly_chart(
+                grafico_nacionalidade(marts["nationality_stats"]),
+                width="stretch",
+            )
     with right:
         with st.container(border=True):
             st.subheader("Títulos de construtores")
-            st.plotly_chart(grafico_titulos_construtores(marts["constructor_titles_by_decade"]), width="stretch")
+            st.plotly_chart(
+                grafico_titulos_construtores(
+                    marts["constructor_titles_by_decade"]
+                ),
+                width="stretch",
+            )
 
     with st.container(border=True):
         st.subheader("Evolução histórica de vitórias")
-        st.plotly_chart(grafico_vitorias_construtores(marts["constructor_wins_by_year"]), width="stretch")
+        st.plotly_chart(
+            grafico_vitorias_construtores(marts["constructor_wins_by_year"]),
+            width="stretch",
+        )
 
     with st.container(border=True):
         st.subheader("Hall da fama")
         fame = marts["hall_of_fame"].copy()
-        fame["win_efficiency_pct"] = fame["win_efficiency_pct"].map(formatar_percentual)
+        fame["win_efficiency_pct"] = fame["win_efficiency_pct"].map(
+            formatar_percentual
+        )
         fame = fame.rename(
             columns={
                 "driver": "Piloto",
@@ -89,7 +118,12 @@ def panorama(marts: dict[str, pd.DataFrame]) -> None:
                 "win_efficiency_pct": "Eficiência",
             }
         )
-        st.dataframe(fame.drop(columns=["driverId"]), hide_index=True, width="stretch", alt="Ranking histórico dos pilotos")
+        st.dataframe(
+            fame.drop(columns=["driverId"]),
+            hide_index=True,
+            width="stretch",
+            alt="Ranking histórico dos pilotos",
+        )
 
 
 def temporada(marts: dict[str, pd.DataFrame]) -> None:
@@ -99,8 +133,18 @@ def temporada(marts: dict[str, pd.DataFrame]) -> None:
     kpi = filtrar_ano(marts["season_kpis"], ano).iloc[0]
 
     with st.container(horizontal=True):
-        st.metric("Campeão de pilotos", str(kpi["driver_champion"]), f"{formatar_numero(kpi['driver_champion_points'], 1)} pontos", border=True)
-        st.metric("Campeão de construtores", str(kpi["constructor_champion"]), f"{formatar_numero(kpi['constructor_champion_points'], 1)} pontos", border=True)
+        st.metric(
+            "Campeão de pilotos",
+            str(kpi["driver_champion"]),
+            f"{formatar_numero(kpi['driver_champion_points'], 1)} pontos",
+            border=True,
+        )
+        st.metric(
+            "Campeão de construtores",
+            str(kpi["constructor_champion"]),
+            f"{formatar_numero(kpi['constructor_champion_points'], 1)} pontos",
+            border=True,
+        )
         st.metric("Corridas", formatar_numero(kpi["races"]), border=True)
         st.metric("Abandonos", formatar_numero(kpi["dnfs"]), border=True)
 
@@ -124,7 +168,9 @@ def temporada(marts: dict[str, pd.DataFrame]) -> None:
 
 
 marts = carregar_marts()
-tab_panorama, tab_temporada = st.tabs(["Panorâmico histórico", "Análise por temporada"])
+tab_panorama, tab_temporada = st.tabs(
+    ["Panorâmico histórico", "Análise por temporada"]
+)
 with tab_panorama:
     panorama(marts)
 with tab_temporada:
