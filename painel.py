@@ -23,6 +23,7 @@ from collections.abc import Iterable
 
 import duckdb
 import pandas as pd
+import plotly.express as px
 
 
 def ler(marts: Iterable[str]) -> dict[str, pd.DataFrame]:
@@ -65,3 +66,97 @@ def formatar_numero(valor: object, casas: int = 0) -> str:
 def formatar_percentual(valor: object) -> str:
     """Formata um percentual já calculado no mart."""
     return f"{formatar_numero(valor, 2)}%"
+
+
+def grafico_nacionalidade(df: pd.DataFrame):
+    dados = limitar(ordenar(df, "wins"), 10)
+    return px.bar(
+        dados,
+        x="wins",
+        y="nationality",
+        color="titles",
+        orientation="h",
+        title="Top 10 nacionalidades por vitórias",
+        labels={"wins": "Vitórias", "nationality": "Nacionalidade", "titles": "Títulos"},
+    )
+
+
+def grafico_titulos_construtores(df: pd.DataFrame):
+    return px.bar(
+        df,
+        x="decade",
+        y="titles",
+        color="constructor",
+        barmode="stack",
+        title="Títulos de construtores por década",
+        labels={"decade": "Década", "titles": "Títulos", "constructor": "Construtor"},
+    )
+
+
+def grafico_vitorias_construtores(df: pd.DataFrame):
+    return px.line(
+        df,
+        x="year",
+        y="wins",
+        color="constructor",
+        markers=True,
+        title="Evolução das vitórias por construtor",
+        labels={"year": "Ano", "wins": "Vitórias", "constructor": "Construtor"},
+    )
+
+
+def grafico_progressao(df: pd.DataFrame):
+    return px.line(
+        df,
+        x="round",
+        y="cumulative_points",
+        color="driver",
+        hover_data=["race"],
+        markers=True,
+        title="Progressão do campeonato de pilotos",
+        labels={"round": "Rodada", "cumulative_points": "Pontos acumulados", "driver": "Piloto"},
+    )
+
+
+def grafico_gap(df: pd.DataFrame):
+    return px.area(
+        df,
+        x="round",
+        y=["gap_to_second", "gap_to_third"],
+        title="Diferença para o líder",
+        labels={"round": "Rodada", "value": "Pontos de diferença", "variable": "Posição"},
+    )
+
+
+def grafico_grid(df: pd.DataFrame):
+    return px.bar(
+        df.sort_values("average_grid_gain"),
+        x="average_grid_gain",
+        y="driver",
+        orientation="h",
+        title="Posições ganhas ou perdidas",
+        labels={"average_grid_gain": "Ganho médio de posições", "driver": "Piloto"},
+    )
+
+
+def grafico_pit_stops(df: pd.DataFrame):
+    return px.bar(
+        df,
+        x="constructor",
+        y=["average_stop_seconds", "fastest_stop_seconds"],
+        barmode="group",
+        title="Performance de pit stops",
+        labels={"value": "Segundos", "constructor": "Construtor", "variable": "Métrica"},
+    )
+
+
+def grafico_dnfs(df: pd.DataFrame):
+    return px.bar(
+        df,
+        x="constructor",
+        y="dnfs",
+        color="incident_category",
+        barmode="stack",
+        title="Confiabilidade e incidentes",
+        labels={"constructor": "Construtor", "dnfs": "Abandonos", "incident_category": "Categoria"},
+    )
