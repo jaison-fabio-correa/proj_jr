@@ -76,7 +76,7 @@ def formatar_percentual(valor: object) -> str:
 
 def grafico_nacionalidade(df: pd.DataFrame):
     dados = limitar(ordenar(df, "titles"), 10)
-    return px.bar(
+    figura = px.bar(
         dados,
         x="wins",
         y="nationality",
@@ -89,6 +89,11 @@ def grafico_nacionalidade(df: pd.DataFrame):
             "titles": "Títulos",
         },
     )
+    figura.update_yaxes(
+        categoryorder="array",
+        categoryarray=dados["nationality"].tolist()[::-1],
+    )
+    return figura
 
 
 def grafico_titulos_construtores(df: pd.DataFrame):
