@@ -63,19 +63,39 @@ REFINED_TABLES = (
 
 QUERIES = {
     "overview_kpis": """
-        WITH driver_titles AS (
-            SELECT COUNT(DISTINCT ds.driverId) AS total
+        WITH final_driver_standings AS (
+            SELECT
+                ds.*,
+                r.year,
+                ROW_NUMBER() OVER (
+                    PARTITION BY r.year, ds.driverId
+                    ORDER BY r.round DESC
+                ) AS final_row
             FROM refined.driver_standings ds
-            WHERE ds.position = 1
+            JOIN refined.races r ON r.raceId = ds.raceId
+        ), driver_titles AS (
+            SELECT COUNT(DISTINCT driverId) AS total
+            FROM final_driver_standings
+            WHERE final_row = 1 AND position = 1
         ), constructor_titles AS (
-            SELECT COUNT(DISTINCT cs.constructorId) AS total
-            FROM refined.constructor_standings cs
-            WHERE cs.position = 1
+            SELECT COUNT(DISTINCT constructorId) AS total
+            FROM (
+                SELECT
+                    cs.*,
+                    r.year,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY r.year, cs.constructorId
+                        ORDER BY r.round DESC
+                    ) AS final_row
+                FROM refined.constructor_standings cs
+                JOIN refined.races r ON r.raceId = cs.raceId
+            ) final_constructor_standings
+            WHERE final_row = 1 AND position = 1
         ), top_nationality AS (
             SELECT d.nationality, COUNT(*) AS titles
-            FROM refined.driver_standings ds
+            FROM final_driver_standings ds
             JOIN refined.drivers d ON d.driverId = ds.driverId
-            WHERE ds.position = 1
+            WHERE ds.final_row = 1 AND ds.position = 1
             GROUP BY d.nationality
             ORDER BY titles DESC, d.nationality
             LIMIT 1
@@ -89,11 +109,21 @@ QUERIES = {
             (SELECT titles FROM top_nationality) AS top_champion_nationality_titles
     """,
     "nationality_stats": """
-        WITH titles AS (
-            SELECT d.nationality, COUNT(*) AS titles
+        WITH final_driver_standings AS (
+            SELECT
+                ds.*,
+                r.year,
+                ROW_NUMBER() OVER (
+                    PARTITION BY r.year, ds.driverId
+                    ORDER BY r.round DESC
+                ) AS final_row
             FROM refined.driver_standings ds
+            JOIN refined.races r ON r.raceId = ds.raceId
+        ), titles AS (
+            SELECT d.nationality, COUNT(*) AS titles
+            FROM final_driver_standings ds
             JOIN refined.drivers d ON d.driverId = ds.driverId
-            WHERE ds.position = 1
+            WHERE ds.final_row = 1 AND ds.position = 1
             GROUP BY d.nationality
         ), wins AS (
             SELECT d.nationality, COUNT(*) AS wins
@@ -120,14 +150,24 @@ QUERIES = {
         ORDER BY wins DESC, podiums DESC, nationality
     """,
     "constructor_titles_by_decade": """
+        WITH final_constructor_standings AS (
+            SELECT
+                cs.*,
+                r.year,
+                ROW_NUMBER() OVER (
+                    PARTITION BY r.year, cs.constructorId
+                    ORDER BY r.round DESC
+                ) AS final_row
+            FROM refined.constructor_standings cs
+            JOIN refined.races r ON r.raceId = cs.raceId
+        )
         SELECT
-            CAST(FLOOR(r.year / 10) * 10 AS INTEGER) AS decade,
+            CAST(FLOOR(year / 10) * 10 AS INTEGER) AS decade,
             c.name AS constructor,
             COUNT(*) AS titles
-        FROM refined.constructor_standings cs
-        JOIN refined.races r ON r.raceId = cs.raceId
+        FROM final_constructor_standings cs
         JOIN refined.constructors c ON c.constructorId = cs.constructorId
-        WHERE cs.position = 1
+        WHERE cs.final_row = 1 AND cs.position = 1
         GROUP BY decade, c.name
         ORDER BY decade, titles DESC, constructor
     """,
@@ -144,10 +184,20 @@ QUERIES = {
         ORDER BY r.year, wins DESC, constructor
     """,
     "hall_of_fame": """
-        WITH titles AS (
+        WITH final_driver_standings AS (
+            SELECT
+                ds.*,
+                r.year,
+                ROW_NUMBER() OVER (
+                    PARTITION BY r.year, ds.driverId
+                    ORDER BY r.round DESC
+                ) AS final_row
+            FROM refined.driver_standings ds
+            JOIN refined.races r ON r.raceId = ds.raceId
+        ), titles AS (
             SELECT driverId, COUNT(*) AS titles
-            FROM refined.driver_standings
-            WHERE position = 1
+            FROM final_driver_standings
+            WHERE final_row = 1 AND position = 1
             GROUP BY driverId
         ), wins AS (
             SELECT driverId, COUNT(*) AS wins
