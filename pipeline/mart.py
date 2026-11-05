@@ -278,6 +278,7 @@ QUERIES = {
             JOIN refined.races r ON r.raceId = res.raceId
             JOIN refined.status s ON s.statusId = res.statusId
             WHERE s.status <> 'Finished'
+              AND lower(s.status) NOT LIKE '%lap%'
             GROUP BY r.year
         )
         SELECT
@@ -405,6 +406,7 @@ QUERIES = {
         JOIN refined.constructors c ON c.constructorId = res.constructorId
         JOIN refined.status s ON s.statusId = res.statusId
         WHERE s.status <> 'Finished'
+          AND lower(s.status) NOT LIKE '%lap%'
         GROUP BY r.year, c.name, incident_category
         ORDER BY r.year, constructor, incident_category
     """,
